@@ -14,7 +14,7 @@ class DB():
             db_file = os.path.join(base_dir, 'game.db')
         self.__db_file = db_file
 
-    def save_article_list(self, article_list: list):
+    def save_article_list(self, tag,article_list: list):
         """将文章存储起来，以id,title,clap_count,medium_url,locked进行存储"""
         conn = sqlite3.connect(self.__db_file)
         c = conn.cursor()
@@ -22,7 +22,7 @@ class DB():
         try:
             # 执行sql查询
             c.execute(
-                'create table if not exists article(id TEXT primary key, title TEXT, author_id TEXT, clap_count INTEGER, medium_url TEXT, locked INTEGER, name TEXT, username TEXT, user_img TEXT,p TEXT)')
+                'create table if not exists article(id TEXT primary key,title TEXT, tag TEXT, author_id TEXT, clap_count INTEGER, medium_url TEXT, locked INTEGER, name TEXT, username TEXT, user_img TEXT,p TEXT)')
             # 循环插入数据
             for item in article_list:
                 id = item.get('id')
@@ -36,8 +36,8 @@ class DB():
                 result = c.fetchone()
                 if result is None:
                     c.execute(
-                        "INSERT INTO article(id,title,author_id,clap_count,medium_url,locked) VALUES(?,?,?,?,?,?)",
-                        (id, title, author_id, clap_count, medium_url, locked))
+                        "INSERT INTO article(id,title,tag,author_id,clap_count,medium_url,locked) VALUES(?,?,?,?,?,?,?)",
+                        (id, title, tag,author_id, clap_count, medium_url, locked))
                     count += 1
             # 插入完成
         except Exception as e:
@@ -80,10 +80,10 @@ class DB():
         try:
             # 执行sql查询
             c.execute(
-                'create table if not exists article(id TEXT primary key, title TEXT, author_id TEXT, clap_count INTEGER, medium_url TEXT, locked INTEGER, name TEXT, username TEXT, user_img TEXT,p TEXT)')
+                'create table if not exists article(id TEXT primary key, title TEXT,tag Text, author_id TEXT, clap_count INTEGER, medium_url TEXT, locked INTEGER, name TEXT, username TEXT, user_img TEXT,p TEXT)')
             # 查数据
             c.execute(
-                f'select id,title,author_id,clap_count,medium_url,locked,name,username,user_img,p from article where locked in {locked} and clap_count>=? and clap_count<=? order by {sort_field} {sort_order} limit {limit}',
+                f'select id,title,tag,author_id,clap_count,medium_url,locked,name,username,user_img,p from article where locked in {locked} and clap_count>=? and clap_count<=? order by {sort_field} {sort_order} limit {limit}',
                 (min_clap, max_clap))
             result = c.fetchall()
             return result

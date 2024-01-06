@@ -3,6 +3,7 @@ import json
 import logging
 import os.path
 import random
+import re
 import time
 import zipfile
 
@@ -23,19 +24,25 @@ def index():
     return RedirectResponse(url="/static/index.html")
 
 
-def task_get_articles(task_id: str, size: int, locked: str, cookie: str):
+def task_get_articles(task_id: str, size: int, locked: str, cookie: str, tags: str):
     db.insert_task(task_id)
     try:
         medium.set_cookie(cookie)
         if size > 25:
-            print("使用匿名抓取")
-            medium.save_articles_to_db(start=0, size=size)
-            if cookie is not None:
-                print("使用用户主页抓取")
-                medium.save_articles_to_db(start=0, size=size, method="personal")
+            # 处理tag
+            tags = tags.split(",")
+            for tag in tags:
+                tag_ = tag.strip()
+                tag_ = re.sub(r"\s+", "-", tag_)
+                tag_ = tag_.lower()
+                print(f"使用匿名抓取:{tag}")
+                medium.save_articles_to_db(tag=tag_, start=0, size=size)
+                if cookie is not None:
+                    print(f"使用用户主页抓取:{tag}")
+                    medium.save_articles_to_db(tag=tag_, start=0, size=size, method="personal")
         article_list = medium.query_article_list(10, sorting={"field": "clap_count", "order": "desc"},
                                                  filters={"locked": locked})
-        for article_id, title, author_id, clap_count, url, locked_, name, username, user_img, p in article_list:
+        for article_id, title, tag, author_id, clap_count, url, locked_, name, username, user_img, p in article_list:
             if p is None:
                 if medium.save_article_to_db(author_id, article_id, url):
                     print("文章 {} 内容已存储".format(title))
@@ -58,7 +65,7 @@ def task_get_articles(task_id: str, size: int, locked: str, cookie: str):
 
 
 @router.get("/get_articles")
-def get_articles(size: int, locked: str, cookie: str, background_tasks: BackgroundTasks):
+def get_articles(size: int, locked: str, cookie: str, tags: str, background_tasks: BackgroundTasks):
     print("cookie是", cookie)
     if (cookie is not None) and (cookie != "null"):
         # 进行base64解码
@@ -66,7 +73,7 @@ def get_articles(size: int, locked: str, cookie: str, background_tasks: Backgrou
     else:
         cookie = None
     task_id = f"{time.time()}{random.randint(0, 1000)}"
-    background_tasks.add_task(task_get_articles, task_id, size, locked, cookie)
+    background_tasks.add_task(task_get_articles, task_id, size, locked, cookie, tags)
     return {"message": "获取中", "task_id": task_id}
 
 
@@ -80,9 +87,13 @@ def get_top_10_articles(locked: str = "0|1"):
     data = medium.query_article_list(10, sorting={"field": "clap_count", "order": "desc"},
                                      filters={"locked": locked})
     articles = []
-    for article_id, title, author_id, clap_count, url, locked, name, username, user_img, p in data:
-        articles.append({"article_id": article_id, "title": title, "author": name, "url": url, "clap": clap_count,
-                         "locked": locked})
+    for article_id, title, tag, author_id, clap_count, url, locked, name, username, user_img, p in data:
+        tag = re.sub("-", " ", tag)
+        # 首字母大写
+        tag = tag.capitalize()
+        articles.append(
+            {"article_id": article_id, "title": title, "tag": tag, "author": name, "url": url, "clap": clap_count,
+             "locked": locked})
     return {"message": "查询成功", "data": articles}
 
 

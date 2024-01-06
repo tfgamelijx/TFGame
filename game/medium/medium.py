@@ -126,12 +126,12 @@ class Medium():
                             method: str = "recommend"):
         """存储到db，存储成功返回 True"""
         article_list = self.__query_articles(tag, start, size, method)
-        rows = self.__db.save_article_list(article_list)
+        rows = self.__db.save_article_list(tag,article_list)
         print(f"共获取了{len(article_list)}个标题，实际存储到数据库{rows}个")
         return rows
 
     def query_article_list(self, limit: int, filters: dict = None, sorting: dict = None):
-        """筛选推荐列表，返回[（article_id,title,author_id,clap_count,url,locked,name,username,user_img,p）]
+        """筛选推荐列表，返回[（article_id,title,tag,author_id,clap_count,url,locked,name,username,user_img,p）]
 
         filters：locked:文章状态(0,1)，min_clap_count:最小鼓掌数，max_clap_count:最大鼓掌数：
         sorting：field:排序字段(clap_count)，order（asc,desc）

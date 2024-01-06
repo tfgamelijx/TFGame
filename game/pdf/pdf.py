@@ -24,14 +24,15 @@ class PDF():
         """生成pdf,（article_id,title,author_id,clap_count,url,locked,name,username,user_img,p）"""
         article_id = article[0]
         title = article[1]
+        tag=article_id[2]
         print(f"将生成pdf：{title}")
-        author_id = article[2]
-        clap_count = article[3]
-        url = article[4]
-        locked = article[5]
-        name = article[6]
-        username = article[7]
-        ps = json.loads(article[9])
+        author_id = article[3]
+        clap_count = article[4]
+        url = article[5]
+        locked = article[6]
+        name = article[7]
+        username = article[8]
+        ps = json.loads(article[10])
         # 创建pdf
         filename_title = re.sub(r'[^a-zA-Z0-9\s_]', '', title)
         filename_title = re.sub(r'\s+', "-", filename_title)
