@@ -14,7 +14,7 @@ class DB():
             db_file = os.path.join(base_dir, 'game.db')
         self.__db_file = db_file
 
-    def save_article_list(self, tag,article_list: list):
+    def save_article_list(self, tag, article_list: list):
         """将文章存储起来，以id,title,clap_count,medium_url,locked进行存储"""
         conn = sqlite3.connect(self.__db_file)
         c = conn.cursor()
@@ -37,8 +37,11 @@ class DB():
                 if result is None:
                     c.execute(
                         "INSERT INTO article(id,title,tag,author_id,clap_count,medium_url,locked) VALUES(?,?,?,?,?,?,?)",
-                        (id, title, tag,author_id, clap_count, medium_url, locked))
+                        (id, title, tag, author_id, clap_count, medium_url, locked))
                     count += 1
+                else:
+                    # 更新其数据
+                    c.execute("update article set clap_count=? where id=?", (clap_count,id))
             # 插入完成
         except Exception as e:
             logger.exception(e)
