@@ -1,3 +1,4 @@
+import base64
 import json
 import logging
 import os.path
@@ -22,11 +23,16 @@ def index():
     return RedirectResponse(url="/static/index.html")
 
 
-def task_get_articles(task_id: str, size: int, locked: str):
+def task_get_articles(task_id: str, size: int, locked: str, cookie: str):
     db.insert_task(task_id)
     try:
+        medium.set_cookie(cookie)
         if size > 25:
-            medium.save_article_list_to_db(start=0, size=size)
+            print("使用匿名抓取")
+            medium.save_articles_to_db(start=0, size=size)
+            if cookie is not None:
+                print("使用用户主页抓取")
+                medium.save_articles_to_db(start=0, size=size, method="personal")
         article_list = medium.query_article_list(10, sorting={"field": "clap_count", "order": "desc"},
                                                  filters={"locked": locked})
         for article_id, title, author_id, clap_count, url, locked_, name, username, user_img, p in article_list:
@@ -52,9 +58,15 @@ def task_get_articles(task_id: str, size: int, locked: str):
 
 
 @router.get("/get_articles")
-def get_articles(size: int, locked: str, background_tasks: BackgroundTasks):
+def get_articles(size: int, locked: str, cookie: str, background_tasks: BackgroundTasks):
+    print("cookie是", cookie)
+    if (cookie is not None) and (cookie != "null"):
+        # 进行base64解码
+        cookie = base64.b64decode(cookie).decode('utf-8')
+    else:
+        cookie = None
     task_id = f"{time.time()}{random.randint(0, 1000)}"
-    background_tasks.add_task(task_get_articles, task_id, size, locked)
+    background_tasks.add_task(task_get_articles, task_id, size, locked, cookie)
     return {"message": "获取中", "task_id": task_id}
 
 

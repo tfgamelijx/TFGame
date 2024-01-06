@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <title>Get Article From Medium!</title>
@@ -12,9 +12,7 @@
     <script src="//unpkg.com/element-plus"></script>
 </head>
 <body>
-<div id="app">
-    <div style="width: 80%;margin: auto;">
-
+<div id="app" style="width: 80%;margin: auto;">
         <el-card class="box-card">
             <template #header>
                 <div class="card-header">
@@ -24,21 +22,36 @@
             <div>
                 <el-form label-width="120px">
                     <el-form-item label="获取标题数量">
-                        <el-slider v-model="size" :disabled="sliderStatus" show-input :max="1000"/>
+                        <el-slider v-model="size" :disabled="sliderStatus" show-input :max="5000"/>
                     </el-form-item>
                     <el-form-item>
-                        <el-checkbox :disabled="priStatus" v-model="pri" label="获取未公开的" size="large"/>
+                        <el-row :gutter="20">
+                            <el-col :span="12">
+                                <el-checkbox :disabled="priStatus" v-model="pri" label="获取付费的文章" size="large"/>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-input :disabled="cokStatus||!cok" v-model:="cookie" placeholder="cookie"
+                                          size="large">
+                                    <template #prepend>
+                                        <el-checkbox :disabled="cokStatus" v-model="cok" size="large"/>
+                                    </template>
+                                </el-input>
+                            </el-col>
+                        </el-row>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" v-on:click="getArticles" round :loading="loadingGetArticles">
                             {{getArticlesText}}
                         </el-button>
-                        <el-button v-on:click="download" :disabled="downloadStatus"  round>Download</el-button>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-alert title="0代表不从网站上获取标题，使用本地数据库的数据" type="info"/>
+                        <el-button v-on:click="download" :disabled="downloadStatus" round>Download</el-button>
                     </el-form-item>
                 </el-form>
+                <div>
+                    <el-alert title="参数说明"
+                              description="【获取标题数量】设置为0时直接从本地获取；【Cookie】填写Cookie，先匿名抓取，再从用户主页进行抓取，不填写只进行匿名抓取；"
+                              type="warning"></el-alert>
+                </div>
+
                 <!--                article_id":article_id,"title":title,"author":name,"url":url,"clap":clap_count,"locked":locked}-->
                 <p v-for="item in top10" :key="item.article_id">
                     <el-link :href="item.url" target="_blank">{{item.title}}</el-link>
@@ -48,7 +61,6 @@
                 </p>
             </div>
         </el-card>
-    </div>
 </div>
 <script>
     const App = {
@@ -62,7 +74,10 @@
                 pri: false,
                 priStatus: false,
                 sliderStatus: false,
-                downloadStatus:true
+                downloadStatus: true,
+                cok: false,
+                cokStatus: false,
+                cookie: null
             };
         },
         computed: {
@@ -77,7 +92,12 @@
         },
         methods: {
             getArticles() {
-                fetch('/get_articles?size=' + this.size + "&" + "locked=" + this.locked, {
+                var cookie = null;
+                if (this.cok && !this.cokStatus && this.cookie != null && this.cookie != "") {
+                    cookie = btoa(this.cookie)
+                }
+                console.log(cookie)
+                fetch('/get_articles?size=' + this.size + "&" + "locked=" + this.locked + "&" + "cookie=" + cookie, {
                     method: 'GET',
                 })
                     .then(response => response.json())
@@ -90,7 +110,8 @@
                         this.getArticlesText = "Getting..."
                         this.priStatus = true
                         this.sliderStatus = true
-                        this.downloadStatus=true
+                        this.downloadStatus = true
+                        this.cokStatus = true
                         this.startPolling()
                     })
                     .catch((error) => console.error('Error:', error));
@@ -104,9 +125,10 @@
                             this.stopPolling();
                             this.loadingGetArticles = false;
                             this.getArticlesText = "Create pdf files"
-                            this.downloadStatus=false
+                            this.downloadStatus = false
                             this.sliderStatus = false
                             this.priStatus = false
+                            this.cokStatus = false
                         }
                     })
                     .catch((error) => console.error('Error:', error));
@@ -124,11 +146,11 @@
                 fetch("/download", {method: 'GET'})
                     .then(response => response.json())
                     .then(data => {
-                        if(data.message=="请先获取！"){
+                        if (data.message == "请先获取！") {
                             this.$message.error('请先创建pdf！');
-                        }else {
-                            var path=data.data
-                            window.open(path,"_blank");
+                        } else {
+                            var path = data.data
+                            window.open(path, "_blank");
                         }
                         console.log(data)
                     })
@@ -143,7 +165,6 @@
             }
         }
     };
-
     const app = Vue.createApp(App);
     app.use(ElementPlus);
     app.mount("#app");
