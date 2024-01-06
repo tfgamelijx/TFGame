@@ -61,9 +61,9 @@
             <p v-for="item in top10" :key="item.article_id">
                 <el-link :href="item.url" target="_blank">{{item.title}}</el-link>
                 <el-text class="mx-1">&nbsp;&nbsp;&nbsp;&nbsp;(clap:{{item.clap}})&nbsp;&nbsp;&nbsp;&nbsp;</el-text>
-                <el-tag v-if="item.locked===1" class="mx-1" type="danger">(locked)</el-tag>
-                <el-tag v-if="item.locked===0" class="mx-1" type="success">(unlocked)</el-tag>&nbsp;
-                <el-tag size="mini">{{item.tag}}</el-tag>
+                <el-tag v-if="item.locked===1"  size="small"  type="danger">(locked)</el-tag>
+                <el-tag v-if="item.locked===0" size="small" type="success">(unlocked)</el-tag>&nbsp;
+                <el-tag size="small">{{item.tag}}</el-tag>
             </p>
         </div>
     </el-card>
