@@ -27,21 +27,19 @@ def index():
 def task_get_articles(task_id: str, size: int, locked: str, cookie: str, tags: str):
     db.insert_task(task_id)
     try:
+        # 处理tag
+        tags = tags.split(",")
+        tags = [re.sub(r"\s+", "-", tag.strip()).lower() for tag in tags]
         medium.set_cookie(cookie)
         if size > 25:
-            # 处理tag
-            tags = tags.split(",")
             for tag in tags:
-                tag_ = tag.strip()
-                tag_ = re.sub(r"\s+", "-", tag_)
-                tag_ = tag_.lower()
                 print(f"使用匿名抓取:{tag}")
-                medium.save_articles_to_db(tag=tag_, start=0, size=size)
+                medium.save_articles_to_db(tag=tag, start=0, size=size)
                 if cookie is not None:
                     print(f"使用用户主页抓取:{tag}")
-                    medium.save_articles_to_db(tag=tag_, start=0, size=size, method="personal")
+                    medium.save_articles_to_db(tag=tag, start=0, size=size, method="personal")
         article_list = medium.query_article_list(10, sorting={"field": "clap_count", "order": "desc"},
-                                                 filters={"locked": locked})
+                                                 filters={"locked": locked, "tag": tags})
         for article_id, title, tag, author_id, clap_count, url, locked_, name, username, user_img, p in article_list:
             if p is None:
                 if medium.save_article_to_db(author_id, article_id, url):
@@ -50,7 +48,7 @@ def task_get_articles(task_id: str, size: int, locked: str, cookie: str, tags: s
                     print("文章 {} 内容存储失败".format(title))
         # 重新查询一次
         article_list = medium.query_article_list(10, sorting={"field": "clap_count", "order": "desc"},
-                                                 filters={"locked": locked})
+                                                 filters={"locked": locked, "tag": tags})
         pdf = PDF()
         # 生成pdf
         for article in article_list:
@@ -83,9 +81,11 @@ def query_task(task_id: str):
 
 
 @router.get("/top_10_articles")
-def get_top_10_articles(locked: str = "0|1"):
+def get_top_10_articles(locked: str = "0|1", tags: str = ""):
+    tags = tags.split(",")
+    tags = [re.sub(r"\s+", "-", tag.strip()).lower() for tag in tags]
     data = medium.query_article_list(10, sorting={"field": "clap_count", "order": "desc"},
-                                     filters={"locked": locked})
+                                     filters={"locked": locked, "tag": tags})
     articles = []
     for article_id, title, tag, author_id, clap_count, url, locked, name, username, user_img, p in data:
         tag = re.sub("-", " ", tag)

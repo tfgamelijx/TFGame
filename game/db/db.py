@@ -41,7 +41,7 @@ class DB():
                     count += 1
                 else:
                     # 更新其数据
-                    c.execute("update article set clap_count=? where id=?", (clap_count,id))
+                    c.execute("update article set clap_count=? where id=?", (clap_count, id))
             # 插入完成
         except Exception as e:
             logger.exception(e)
@@ -76,7 +76,7 @@ class DB():
         finally:
             conn.close()
 
-    def query_article_list(self, locked: str, min_clap: int, max_clap, sort_field, sort_order, limit):
+    def query_article_list(self, tag: str, locked: str, min_clap: int, max_clap, sort_field, sort_order, limit):
         """查询推荐列表"""
         conn = sqlite3.connect(self.__db_file)
         c = conn.cursor()
@@ -86,7 +86,7 @@ class DB():
                 'create table if not exists article(id TEXT primary key, title TEXT,tag Text, author_id TEXT, clap_count INTEGER, medium_url TEXT, locked INTEGER, name TEXT, username TEXT, user_img TEXT,p TEXT)')
             # 查数据
             c.execute(
-                f'select id,title,tag,author_id,clap_count,medium_url,locked,name,username,user_img,p from article where locked in {locked} and clap_count>=? and clap_count<=? order by {sort_field} {sort_order} limit {limit}',
+                f'select id,title,tag,author_id,clap_count,medium_url,locked,name,username,user_img,p from article where tag in {tag} and locked in {locked} and clap_count>=? and clap_count<=? order by {sort_field} {sort_order} limit {limit}',
                 (min_clap, max_clap))
             result = c.fetchall()
             return result

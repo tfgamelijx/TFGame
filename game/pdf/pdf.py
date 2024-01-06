@@ -1,17 +1,21 @@
 import base64
 import json
+import logging
 import os.path
 import random
 import re
 import shutil
 import time
 
+from PIL import Image as PILImage
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Image
 from reportlab.platypus.para import Paragraph
+
+logger = logging.getLogger(__name__)
 
 
 class PDF():
@@ -93,12 +97,19 @@ class PDF():
                 img = p.get("img")
                 # 转码
                 img_b = base64.b64decode(img.encode("utf-8"))
-                rand_number=f"{time.time()}_{random.randint(100,110000)}".replace(".","")
+                rand_number = f"{time.time()}_{random.randint(100, 110000)}".replace(".", "")
                 temp_path = os.path.join(self.__static_dir, "pdf", f"{rand_number}.jpg")
                 with open(temp_path, "wb+") as f:
                     f.write(img_b)
-                image=Image(filename=temp_path,width=100,height=100)
-                story.append(image)
+                if os.path.exists(temp_path):
+                    # 尝试读取文件
+                    try:
+                        PILImage.open(temp_path).close()
+                    except:
+                        logger.exception(f"打开照片失败-{temp_path}")
+                    else:
+                        image = Image(filename=temp_path, width=100, height=100)
+                        story.append(image)
                 continue
             text = p.get("text")
             zh_text = p.get("zh_text")
@@ -121,10 +132,18 @@ class PDF():
                 story.append(par)
                 # 转码
                 user_img_b = base64.b64decode(user_img.encode("utf-8"))
-                temp_path = os.path.join(self.__static_dir, "pdf", "temp.jpg")
-                with open(temp_path, "wb+") as f:
-                    f.write(user_img_b)
-                story.append(Image(filename=temp_path))
+                temp_path = os.path.join(self.__static_dir, "pdf", f"{author_id}.jpg")
+                if not os.path.exists(temp_path):
+                    with open(temp_path, "wb+") as f:
+                        f.write(user_img_b)
+                if os.path.exists(temp_path):
+                    # 尝试读取文件
+                    try:
+                        PILImage.open(temp_path).close()
+                    except:
+                        logger.exception(f"打开照片失败-{temp_path}")
+                    else:
+                        story.append(Image(filename=temp_path))
             elif type_ == "H1":
                 par = Paragraph(text, h1_style)
                 story.append(par)

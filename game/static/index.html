@@ -20,8 +20,8 @@
             </div>
         </template>
         <div>
-            <el-form label-width="100px">
-                <el-form-item label="获取标题数量">
+            <el-form label-width="180px">
+                <el-form-item label="在线拉取文章摘要数量">
                     <el-slider v-model="size" :disabled="sliderStatus" show-input :max="5000"/>
                 </el-form-item>
                 <el-form-item label="Tags">
@@ -53,7 +53,7 @@
             </el-form>
             <div>
                 <el-alert title="参数说明"
-                          description="【获取标题数量】设置为0时直接从本地缓存数据获取，无需连接到medium；【Tags】Tags不填时默认为Software Engineering；【Cookie】填写Cookie，先匿名抓取，再从用户主页进行抓取，不填写只进行匿名抓取；"
+                          description="【在线拉取文章摘要数量】设置为0时直接从本地缓存数据获取，无需连接到medium；【Tags】Tags不填时默认为Software Engineering；【Cookie】填写Cookie，先匿名抓取，再从用户主页进行抓取，不填写只进行匿名抓取；"
                           type="warning"></el-alert>
             </div>
 
@@ -155,7 +155,11 @@
                 this.queryTop10()
             },
             queryTop10() {
-                fetch("/top_10_articles?locked=" + this.locked, {method: 'GET'})
+                var tags = "Software Engineering"
+                if (this.tags != "") {
+                    tags = this.tags
+                }
+                fetch("/top_10_articles?locked=" + this.locked+"&tags="+tags, {method: 'GET'})
                     .then(response => response.json())
                     .then(data => {
                         this.top10 = data['data']

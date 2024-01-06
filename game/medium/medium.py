@@ -40,8 +40,8 @@ class Medium():
         # 按照每25个返回
         limt = 25
         articles = []
-        null_list_count=0
-        null_list_count_max=5
+        null_list_count = 0
+        null_list_count_max = 5
         for i in range(start, start + size, limt):
             from_ = i
             to = i + limt
@@ -50,9 +50,9 @@ class Medium():
                 get_articles = self.__query_articles_by_recommend_detail(tag, from_, to, limt)
             else:
                 get_articles = self.__query_articles_by_personal_detail(tag, from_, to, limt)
-            if len(get_articles) <=0:
-                null_list_count+=1
-            if null_list_count>null_list_count_max:
+            if len(get_articles) <= 0:
+                null_list_count += 1
+            if null_list_count > null_list_count_max:
                 print(f"连续{null_list_count_max}次未能继续获取到数据，跳出 ！")
                 break
             for article_item in get_articles:
@@ -126,14 +126,14 @@ class Medium():
                             method: str = "recommend"):
         """存储到db，存储成功返回 True"""
         article_list = self.__query_articles(tag, start, size, method)
-        rows = self.__db.save_article_list(tag,article_list)
+        rows = self.__db.save_article_list(tag, article_list)
         print(f"共获取了{len(article_list)}个标题，实际存储到数据库{rows}个")
         return rows
 
     def query_article_list(self, limit: int, filters: dict = None, sorting: dict = None):
         """筛选推荐列表，返回[（article_id,title,tag,author_id,clap_count,url,locked,name,username,user_img,p）]
 
-        filters：locked:文章状态(0,1)，min_clap_count:最小鼓掌数，max_clap_count:最大鼓掌数：
+        filters：locked:文章状态(0,1)，min_clap_count:最小鼓掌数，max_clap_count:最大鼓掌数：tag:所属主题
         sorting：field:排序字段(clap_count)，order（asc,desc）
         """
         if filters is None:
@@ -147,6 +147,8 @@ class Medium():
         locked = filters.get("locked", "0|1")
         min_clap_count = filters.get("min_clap_count", 0)
         max_clap_count = filters.get("max_clap_count", 999999999999)
+        tag = filters.get("tag", ["software-engineering"])
+        tag_ = "('" + "','".join(tag) + "')"
         match locked:
             case "0" | 0:
                 locked = "(0)"
@@ -157,7 +159,7 @@ class Medium():
             case _:
                 raise Exception("只能是0,1或0|1")
 
-        return self.__db.query_article_list(locked, min_clap_count, max_clap_count, sorting_field, sorting_order,
+        return self.__db.query_article_list(tag_,locked, min_clap_count, max_clap_count, sorting_field, sorting_order,
                                             limit)
 
     def __get_data_from_data(self, data: Union[dict, list], *key: Union[str, int]):
@@ -252,7 +254,7 @@ class Medium():
     def set_cookie(self, cookie):
         self.__session = self.__make_session()
         if cookie is not None:
-            print("---设置了cookie-----",cookie)
+            print("---设置了cookie-----", cookie)
             self.__session.headers.setdefault("Cookie", cookie)
 
 
