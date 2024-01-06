@@ -196,7 +196,7 @@ class Medium():
                 article["name"] = value.get("name")
                 article["username"] = value.get("username")
                 img_id = value.get("imageId")
-                picture = self.__get_picture_to_base64(img_id, 100)
+                picture = self.__get_picture_to_base64(img_id, 25)
                 article["user_img"] = picture
             if key.startswith("Paragraph:"):
                 # 文章
@@ -233,8 +233,8 @@ class Medium():
                     ref = value.get("metadata").get("__ref")
                     img_id = ref.split(":")[1]
                     height = content_json.get(ref).get("originalHeight")
-                    # picture = self.__get_picture_to_base64(img_id, height)
-                    # article["p"].append({"img": picture, "type": "IMG"})
+                    picture = self.__get_picture_to_base64(img_id, height)
+                    article["p"].append({"img": picture, "type": "IMG"})
                 else:
                     print("漏掉了", type_)
         return article

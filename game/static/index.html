@@ -53,16 +53,17 @@
             </el-form>
             <div>
                 <el-alert title="参数说明"
-                          description="【获取标题数量】设置为0时直接从本地获取；【Tags】Tags不填时默认为Software Engineering；【Cookie】填写Cookie，先匿名抓取，再从用户主页进行抓取，不填写只进行匿名抓取；"
+                          description="【获取标题数量】设置为0时直接从本地缓存数据获取，无需连接到medium；【Tags】Tags不填时默认为Software Engineering；【Cookie】填写Cookie，先匿名抓取，再从用户主页进行抓取，不填写只进行匿名抓取；"
                           type="warning"></el-alert>
             </div>
+
 
             <!--                article_id":article_id,"title":title,"author":name,"url":url,"clap":clap_count,"locked":locked}-->
             <p v-for="item in top10" :key="item.article_id">
                 <el-link :href="item.url" target="_blank">{{item.title}}</el-link>
                 <el-text class="mx-1">&nbsp;&nbsp;&nbsp;&nbsp;(clap:{{item.clap}})&nbsp;&nbsp;&nbsp;&nbsp;</el-text>
-                <el-tag v-if="item.locked===1"  size="small"  type="danger">(locked)</el-tag>
-                <el-tag v-if="item.locked===0" size="small" type="success">(unlocked)</el-tag>&nbsp;
+                <el-tag v-if="item.locked===1"  size="small"  type="danger">收费</el-tag>
+                <el-tag v-if="item.locked===0" size="small" type="success">免费</el-tag>&nbsp;
                 <el-tag size="small">{{item.tag}}</el-tag>
             </p>
         </div>
