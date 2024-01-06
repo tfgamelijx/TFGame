@@ -16,8 +16,9 @@ class PDF():
     def __init__(self):
         current_dir = os.path.dirname(__file__)
         self.__static_dir = os.path.join(os.path.dirname(current_dir), "static")
-        #清空pdf
-        shutil.rmtree(os.path.join(self.__static_dir,"pdf"))
+        # 清空pdf
+        if (os.path.exists(os.path.join(self.__static_dir, "pdf"))):
+            shutil.rmtree(os.path.join(self.__static_dir, "pdf"))
 
     def generate_pdf(self, article: list):
         """生成pdf,（article_id,title,author_id,clap_count,url,locked,name,username,user_img,p）"""
@@ -33,7 +34,7 @@ class PDF():
         ps = json.loads(article[9])
         # 创建pdf
         filename_title = re.sub(r'[^a-zA-Z0-9\s_]', '', title)
-        filename_title = re.sub(r'\s+',"-",filename_title)
+        filename_title = re.sub(r'\s+', "-", filename_title)
         filename = os.path.join(self.__static_dir, "pdf",
                                 f"{filename_title}-{clap_count}-{'locked' if locked == 1 else 'unlocked'}.pdf")
         if os.path.exists(filename):
