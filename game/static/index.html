@@ -24,7 +24,7 @@
             <div>
                 <el-form label-width="120px">
                     <el-form-item label="获取标题数量">
-                        <el-slider v-model="size" show-input :max="1000"/>
+                        <el-slider v-model="size" :disabled="sliderStatus" show-input :max="1000"/>
                     </el-form-item>
                     <el-form-item>
                         <el-checkbox :disabled="priStatus" v-model="pri" label="获取未公开的" size="large"/>
@@ -48,6 +48,7 @@
                 </p>
             </div>
         </el-card>
+        &lt; &gt;
     </div>
 </div>
 <script>
@@ -61,6 +62,7 @@
                 getArticlesText: "Create pdf files",
                 pri: false,
                 priStatus: false,
+                sliderStatus: false,
                 downloadStatus:true
             };
         },
@@ -88,6 +90,7 @@
                         this.loadingGetArticles = true;
                         this.getArticlesText = "Getting..."
                         this.priStatus = true
+                        this.sliderStatus = true
                         this.downloadStatus=true
                         this.startPolling()
                     })
@@ -103,6 +106,7 @@
                             this.loadingGetArticles = false;
                             this.getArticlesText = "Create pdf files"
                             this.downloadStatus=false
+                            this.sliderStatus = false
                             this.priStatus = false
                         }
                     })

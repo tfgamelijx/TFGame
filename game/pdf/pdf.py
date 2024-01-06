@@ -23,6 +23,7 @@ class PDF():
         """生成pdf,（article_id,title,author_id,clap_count,url,locked,name,username,user_img,p）"""
         article_id = article[0]
         title = article[1]
+        print(f"将生成pdf：{title}")
         author_id = article[2]
         clap_count = article[3]
         url = article[4]
@@ -85,6 +86,8 @@ class PDF():
             type_ = p.get("type")
             text = p.get("text")
             zh_text = p.get("zh_text")
+            text = text.replace("<", "&lt;").replace(">", "&gt;")
+            zh_text = zh_text.replace("<", "&lt;").replace(">", "&gt;")
             # 将字符串按40个字符分割
             chunks = [zh_text[i:i + 40] for i in range(0, len(zh_text), 40)]
 
