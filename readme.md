@@ -58,4 +58,5 @@ pip install -r .\requirements.txt
 ```
 uvicorn main:app --reload
 ```
-
+#### 界面
+![img.png](img.png)
